@@ -1,0 +1,185 @@
+{% extends 'home/dashboard/html/index.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container-fluid" style="max-width:none">
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title fw-semibold mb-4">Category</h5>
+            
+            <div class="d-flex justify-content-end mb-3">
+                <button class="btn btn-secondary" id="addCategoryBtn">Add Category</button>
+            </div>
+            
+            <!-- Product Listing Table -->
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>SL No</th>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryTableBody">
+                  {% for category in categories %}
+                  <tr>
+                      <td>{{ forloop.counter }}</td> <!-- Serial Number -->
+                      <td>{{ category.name }}</td>
+                      <td>{{ category.description }}</td>
+                      <td>
+                          <button class="btn btn-warning btn-sm" onclick="editCategory({{ category.id }})">Edit</button>
+                          <button class="btn btn-danger btn-sm" onclick="deleteCategory({{ category.id }})">Delete</button>
+                      </td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Category Sidebar -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="categorySidebar">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="categorySidebarTitle">Add Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        <form id="categoryForm">
+            <input type="hidden" id="category_id" name="category_id">
+            <div class="mb-3">
+                <label for="category_name" class="form-label">Category Name</label>
+                <input type="text" class="form-control" id="category_name" name="category_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="category_description" class="form-label">Category Description</label>
+                <textarea class="form-control" id="category_description" name="category_description" rows="3" required></textarea>
+            </div>
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">Save Category</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Open Add Category Sidebar
+document.getElementById('addCategoryBtn').addEventListener('click', function() {
+    document.getElementById('categoryForm').reset();
+    document.getElementById('categorySidebarTitle').textContent = 'Add Category';
+    document.getElementById('category_id').value = ''; // Reset hidden field
+    const offcanvas = new bootstrap.Offcanvas(document.getElementById('categorySidebar'));
+    offcanvas.show();
+});
+
+// Fetch CSRF token from the cookies
+function getCsrfToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith('csrftoken=')) {
+            return cookie.substring('csrftoken='.length);
+        }
+    }
+    return null;
+}
+
+// Load categories (optional, if needed to refresh categories list in form)
+function loadCategories() {
+    return fetch('/api/categories/')
+        .then(response => response.json())
+        .then(data => {
+            const categoryTableBody = document.getElementById('categoryTableBody');
+            categoryTableBody.innerHTML = ''; // Clear existing data
+            data.forEach((category, index) => {
+                categoryTableBody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${category.name}</td>
+                        <td>${category.description}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm" onclick="editCategory(${category.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteCategory(${category.id})">Delete</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+}
+
+// Submit Add/Edit Category form
+document.getElementById('categoryForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const categoryId = document.getElementById('category_id').value;
+    const categoryData = {
+        name: document.getElementById('category_name').value,
+        description: document.getElementById('category_description').value,
+    };
+    
+    const url = categoryId ? `/category/${categoryId}/edit/` : '/api/categories/create/';
+    const method = categoryId ? 'POST' : 'POST';
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'X-CSRFToken': getCsrfToken(),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(categoryData),
+    })
+    .then(response => response.json())
+    .then(() => {
+        const offcanvas = bootstrap.Offcanvas.getInstance(document.getElementById('categorySidebar'));
+        offcanvas.hide();
+        location.reload(); // Reload the page to show the updated data
+    })
+    .catch(error => console.error('Error saving category:', error));
+});
+
+// Edit Category
+function editCategory(categoryId) {
+    fetch(`/category/${categoryId}/edit/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('categorySidebarTitle').textContent = 'Edit Category';
+        document.getElementById('category_id').value = categoryId;
+        document.getElementById('category_name').value = data.name;
+        document.getElementById('category_description').value = data.description;
+        const offcanvas = new bootstrap.Offcanvas(document.getElementById('categorySidebar'));
+        offcanvas.show();
+    });
+}
+
+// Delete Category
+function deleteCategory(categoryId) {
+    if (confirm('Are you sure you want to delete this category?')) {
+        fetch(`/category/${categoryId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                alert('Category deleted successfully!');
+                location.reload(); // Reload the page to show the updated table
+            } else {
+                alert('Error deleting category.');
+            }
+        });
+    }
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCategories();
+});
+</script>
+{% endblock %}

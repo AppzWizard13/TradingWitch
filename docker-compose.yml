@@ -1,0 +1,47 @@
+# version: '3.8'
+
+# services:
+#   web:
+#     build: .
+#     command: python manage.py runserver 0.0.0.0:8000
+#     volumes:
+#       - .:/code
+#     ports:
+#       - 8000:8000
+#     networks:
+#       - tradingwitch_network
+
+# networks:
+#   tradingwitch_network:
+#     driver: bridge
+
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"  # Expose port 8000 for the web service
+    networks:
+      - tradingwitch_network
+
+  # ngrok:
+  #   image: wernight/ngrok
+  #   command: ngrok http web:8000  # Forward traffic to the web service's port 8000
+  #   ports:
+  #     - "4040:4040"  # Ngrok web interface for checking tunnels (optional)
+  #   networks:
+  #     - tradingwitch_network
+  #   depends_on:
+  #     - web
+  #   environment:
+  #     - NGROK_AUTHTOKEN=246hyaqewnWwGIFnObATXDJXsEA_DKqtKJVKyZJcjcTZK8ce  # Replace with your actual Ngrok authtoken
+
+networks:
+  tradingwitch_network:
+    driver: bridge
