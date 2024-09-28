@@ -25,6 +25,9 @@ urlpatterns = [
     path('', include('account.urls')),
     path('', include('trade_app.urls')),
     path('', include('fyersapi.urls')),
+    path('', include('dhan_exec.urls')),
+
+    
 ]
 
 # Static and Media URL patterns

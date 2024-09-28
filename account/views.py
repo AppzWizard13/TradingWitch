@@ -17,6 +17,7 @@ from fyers_apiv3 import fyersModel
 from django.conf import settings
 from account.models import AuthCode
 from .models import AuthCode
+from dhanhq import dhanhq
 
 
 # Create your views here.
@@ -82,7 +83,6 @@ class UserloginView(View):
 
                 # Generate the Fyers authentication URL
                 generateTokenUrl = appSession.generate_authcode()
-                print('generateTokenUrlgenerateTokenUrl', generateTokenUrl)
                 # # Optionally, open this URL in the browser for manual login
                 # webbrowser.open(generateTokenUrl)
 
@@ -94,6 +94,11 @@ class UserloginView(View):
                 return render(request, template, context)
 
         return render(request, template, context)
+
+from django.views.generic import TemplateView
+from django.shortcuts import render
+from datetime import datetime
+import json
 
 
 class DashboardView(TemplateView):
@@ -109,6 +114,130 @@ class DashboardView(TemplateView):
 
         # Call the parent class's dispatch method
         return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        # Get the existing context data from the parent class
+        context = super().get_context_data(**kwargs)
+
+        # Fetch the data from the dhan object
+        dhan = dhanhq(settings.DHAN_CLIENTID, settings.DHAN_ACCESS_TOKEN)
+        fund_data = dhan.get_fund_limits()
+        orderlistdata = dhan.get_order_list()
+        position_data = dhan.get_positions()
+        current_date = datetime.now().date()
+        positions = position_data['data']
+        total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0
+        
+
+        position_data = {'status':200, 'data':[
+            {
+                "dhanClientId": "string",
+                "tradingSymbol": "TCS",
+                "securityId": "string",
+                "positionType": "LONG",
+                "exchangeSegment": "NSE_EQ",
+                "productType": "CNC",
+                "buyAvg": 0,
+                "costPrice": 0,
+                "buyQty": 0,
+                "sellAvg": 0,
+                "sellQty": 0,
+                "netQty": 0,
+                "realizedProfit": 5600,
+                "unrealizedProfit": 0,
+                "rbiReferenceRate": 0,
+                "multiplier": 0,
+                "carryForwardBuyQty": 0,
+                "carryForwardSellQty": 0,
+                "carryForwardBuyValue": 0,
+                "carryForwardSellValue": 0,
+                "dayBuyQty": 0,
+                "daySellQty": 0,
+                "dayBuyValue": 0,
+                "daySellValue": 0,
+                "drvExpiryDate": "string",
+                "drvOptionType": "CALL",
+                "drvStrikePrice": 0,
+                "crossCurrency": 'true'
+            },
+            {
+                "dhanClientId": "string",
+                "tradingSymbol": "NIfty",
+                "securityId": "string",
+                "positionType": "LONG",
+                "exchangeSegment": "NSE_EQ",
+                "productType": "CNC",
+                "buyAvg": 0,
+                "costPrice": 0,
+                "buyQty": 0,
+                "sellAvg": 0,
+                "sellQty": 0,
+                "netQty": 0,
+                "realizedProfit": 1500,
+                "unrealizedProfit": 0,
+                "rbiReferenceRate": 0,
+                "multiplier": 0,
+                "carryForwardBuyQty": 0,
+                "carryForwardSellQty": 0,
+                "carryForwardBuyValue": 0,
+                "carryForwardSellValue": 0,
+                "dayBuyQty": 0,
+                "daySellQty": 0,
+                "dayBuyValue": 0,
+                "daySellValue": 0,
+                "drvExpiryDate": "string",
+                "drvOptionType": "CALL",
+                "drvStrikePrice": 0,
+                "crossCurrency": 'true'
+            },
+            {
+                "dhanClientId": "string",
+                "tradingSymbol": "FINNIFTY",
+                "securityId": "string",
+                "positionType": "LONG",
+                "exchangeSegment": "NSE_EQ",
+                "productType": "CNC",
+                "buyAvg": 0,
+                "costPrice": 0,
+                "buyQty": 0,
+                "sellAvg": 0,
+                "sellQty": 0,
+                "netQty": 0,
+                "realizedProfit": -100,
+                "unrealizedProfit": 0,
+                "rbiReferenceRate": 0,
+                "multiplier": 0,
+                "carryForwardBuyQty": 0,
+                "carryForwardSellQty": 0,
+                "carryForwardBuyValue": 0,
+                "carryForwardSellValue": 0,
+                "dayBuyQty": 0,
+                "daySellQty": 0,
+                "dayBuyValue": 0,
+                "daySellValue": 0,
+                "drvExpiryDate": "string",
+                "drvOptionType": "CALL",
+                "drvStrikePrice": 0,
+                "crossCurrency": 'true'
+            }
+            ]}
+        print(f"Total Realized Profit:", position_data)
+
+        position_data_json = json.dumps(position_data['data'])
+
+
+        # Add the data to the context
+        context['fund_data'] = fund_data
+        context['orderlistdata'] = orderlistdata
+        context['position_data'] = position_data
+        context['current_date'] = current_date
+        context['position_data_json'] = position_data_json
+        
+        context['total_realized_profit'] = total_realized_profit
+
+
+        return context
+
 
 class LogoutView(View):
     def get(self, request):

@@ -54,7 +54,7 @@ def create_configuration(request, config_id=None):
         else:
             # Create a new configuration
             config = TradingConfigurations()
-
+        config.name = request.POST.get('name')
         config.default_stop_loss = request.POST.get('default_stop_loss')
         config.default_order_quantity = request.POST.get('default_order_quantity')
         config.reward_risk_ratio = request.POST.get('reward_risk_ratio')
@@ -86,12 +86,40 @@ def create_configuration(request, config_id=None):
     return JsonResponse({'success': False})
 
 
+
 def get_configuration(request, config_id):
     config = get_object_or_404(TradingConfigurations, id=config_id)
     config_data = {
         'id': config.id,
+        'name': config.name,
         'default_order_quantity': config.default_order_quantity,
         'default_stop_loss': config.default_stop_loss,
-        # Include all other fields that you want to pre-fill in the form
+        'reward_risk_ratio': config.reward_risk_ratio,
+        'maximum_loss': config.maximum_loss,
+        'maximum_trade_count': config.maximum_trade_count,
+        'capital_limit_per_order': config.capital_limit_per_order,
+        'total_capital_usage_limit': config.total_capital_usage_limit,
+        'forward_trailing_points': config.forward_trailing_points,
+        'trailing_to_peak_points': config.trailing_to_peak_points,
+        'reverse_trailing_points': config.reverse_trailing_points,
+        'stop_loss_limit_slippage': config.stop_loss_limit_slippage,
+        'last_updated': config.last_updated.isoformat(),  # Convert to ISO format for JSON serialization
+        'averaging_limit': config.averaging_limit,
+        'order_quantity_mode': config.order_quantity_mode,
+        'scalping_amount_limit': config.scalping_amount_limit,
+        'scalping_mode': config.scalping_mode,
+        'scalping_stop_loss': config.scalping_stop_loss,
+        'scalping_ratio': config.scalping_ratio,
+        'straddle_amount_limit': config.straddle_amount_limit,
+        'straddle_capital_usage_limit': config.straddle_capital_usage_limit,
+        'is_over_trade_active': config.is_over_trade_active,
+        'averaging_quantity': config.averaging_quantity,
+        'active_broker': config.active_broker,
+        'is_active': config.is_active,
     }
     return JsonResponse(config_data)
+
+def delete_configuration(request, config_id):
+    config = get_object_or_404(TradingConfigurations, id=config_id)
+    config.delete()  # Delete the configuration
+    return JsonResponse({'message': 'Configuration deleted successfully.'}, status=204)

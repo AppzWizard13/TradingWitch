@@ -25,13 +25,16 @@
                 <tbody>
                     {% for config in configurations %}
                     <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ config.default_order_quantity }}</td>
-                        <td>{{ config.default_stop_loss }}</td>
-                        <td>{{ config.maximum_trade_count }}</td>
-                        <td>{{ config.averaging_limit }}</td>
-                        <td>{{ config.get_active_broker_display }}</td>
-                        <td>
+                        <td class="fw-bold">{{ forloop.counter }}</td>
+                        <td class="fw-bold">{{ config.default_order_quantity }}</td>
+                        <td class="fw-bold">{{ config.default_stop_loss }}</td>
+                        <td class="fw-bold">{{ config.maximum_trade_count }}</td>
+                        <td class="fw-bold">{{ config.averaging_limit }}</td>
+                        <td class="fw-bold">{{ config.get_active_broker_display }}</td>
+                        <td class="fw-bold">
+                            {% if config.is_active %}
+                            <button class="btn btn-success btn-sm">ACTIVE</button>
+                            {% endif %}
                             <button class="btn btn-warning btn-sm" onclick="editConfiguration({{ config.id }})">Edit</button>
                             <button class="btn btn-danger btn-sm" onclick="deleteConfiguration({{ config.id }})">Delete</button>
                         </td>
@@ -52,6 +55,7 @@
     <div class="offcanvas-body">
         <form id="configurationForm">
             <input type="hidden" id="configuration_id" name="configuration_id">
+            {% csrf_token %}
             <!-- All fields from the TradingConfigurations model -->
             <div class="mb-3">
                 <label for="name" class="form-label">Configuration Name</label>
@@ -223,7 +227,7 @@
         });
 
         // Function to handle editing an existing configuration
-        function editConfiguration(configId) {
+        window.editConfiguration = function(configId) {
             $.ajax({
                 url: `/configurations/get/${configId}/`, // URL for getting configuration data
                 type: 'GET',
@@ -246,29 +250,44 @@
                     $('#averaging_limit').val(data.averaging_limit);
                     $('#order_quantity_mode').val(data.order_quantity_mode);
                     $('#scalping_amount_limit').val(data.scalping_amount_limit);
+                    $('#scalping_mode').prop('checked', data.scalping_mode);
                     $('#scalping_stop_loss').val(data.scalping_stop_loss);
                     $('#scalping_ratio').val(data.scalping_ratio);
                     $('#straddle_amount_limit').val(data.straddle_amount_limit);
                     $('#straddle_capital_usage_limit').val(data.straddle_capital_usage_limit);
+                    $('#is_over_trade_active').prop('checked', data.is_over_trade_active);
                     $('#averaging_quantity').val(data.averaging_quantity);
                     $('#active_broker').val(data.active_broker);
-
-                    // Check if the 'is_active' checkbox should be checked
-                    if (data.is_active) {
-                        $('#is_active').prop('checked', true);
-                    } else {
-                        $('#is_active').prop('checked', false);
-                    }
-
-                    $('#configurationSidebarTitle').text('Edit Configuration'); // Set the sidebar title to 'Edit'
+                    $('#is_active').prop('checked', data.is_active);
+                    
+                    $('#configurationSidebarTitle').text('Edit Configuration'); // Set the title for editing
                     const sidebar = new bootstrap.Offcanvas($('#configurationSidebar')[0]);
                     sidebar.show(); // Show the sidebar
                 },
                 error: function(error) {
-                    console.error('Error:', error); // Log any error
+                    console.error('Error fetching configuration data:', error);
                 }
             });
-        }
+        };
+
+        // Function to handle deleting a configuration
+        window.deleteConfiguration = function(configId) {
+            if (confirm('Are you sure you want to delete this configuration?')) {
+                $.ajax({
+                    url: `/configurations/${configId}/delete/`, // Updated URL for deleting configuration
+                    type: 'DELETE', // Use DELETE method
+                    headers: { 'X-CSRFToken': csrftoken }, // Pass the CSRF token
+                    success: function() {
+                        location.reload(); // Reload the page on success
+                    },
+                    error: function(error) {
+                        console.error('Error deleting configuration:', error);
+                        alert('An error occurred while deleting the configuration.'); // Notify user on error
+                    }
+                });
+            }
+        };
+
     });
 </script>
 
