@@ -37,7 +37,11 @@ class AuthCode(models.Model):
     # is_used = models.BooleanField(default=False)  # To track if the code has been used
 
     def __str__(self):
-        return f"AuthCode(code={self.code}, user={self.user.username}, is_used={self.is_used})"
+        return f"AuthCode(code={self.code})"
 
+class TokenLogger(models.Model):
+    tokenType = models.CharField(max_length=50,null=True)
+    tokenValue = models.CharField(max_length=5000,null=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when the code was created
 
 

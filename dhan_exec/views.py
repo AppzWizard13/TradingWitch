@@ -4,7 +4,7 @@ import re
 import pandas as pd
 from django.http import JsonResponse
 
-def search_csv( , formatted_expiry_date):
+def search_csv(formated_der_symbol , formatted_expiry_date):
 
     file_path = settings.CSV_FILE_PATH
     try:
@@ -29,7 +29,6 @@ def search_csv( , formatted_expiry_date):
         return JsonResponse({'error': str(e)}, status=500)
 
 def convert_derivative_symbol(der_symbol, ex_symbol1):
-    
     parts = der_symbol.split(':')
     if len(parts) != 2:
         return "Invalid symbol format"

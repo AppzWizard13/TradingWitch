@@ -15,11 +15,16 @@ urlpatterns = [
     # auth code view  
     path('authcodes/', views.AuthCodeListView.as_view(), name='authcode-list'),
 
+    path('token-logger/', views.TokenLoggerListView.as_view(), name='token_logger_list'),
 
-    # path('api/login/', views.login_view, name='api_login'),
-    # path('api/logout/', views.api_logout, name='api_logout'),
-    # path('api/csrf-token/', views.csrf_token_view, name='csrf-token'),
-    # path('api/fetch-trade-configurations/', views.fetch_trade_configurations, name='fetch_trade_configurations'),
+    path('websocket-test/', views.wesocketTest.as_view(), name='web_socket_test'),
+
+
+
+    path('api/login/', views.login_view, name='api_login'),
+    path('api/logout/', views.api_logout, name='api_logout'),
+    path('api/csrf-token/', views.csrf_token_view, name='csrf-token'),
+    path('api/fetch-trade-configurations/', views.fetch_trade_configurations, name='fetch_trade_configurations'),
 
 
 

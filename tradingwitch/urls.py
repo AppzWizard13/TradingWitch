@@ -34,3 +34,15 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+
+# routing.py or urls.py for WebSocket routing
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.urls import path
+from fyersapi.routing import ws_urlpatterns  # Import your WebSocket URL patterns
+
+application = ProtocolTypeRouter({
+    "websocket": URLRouter(
+        ws_urlpatterns
+    ),
+})

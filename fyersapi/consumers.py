@@ -14,8 +14,8 @@ import requests
 from channels.generic.websocket import WebsocketConsumer
 from fyers_apiv3.FyersWebsocket import order_ws
 from django.conf import settings
-from account.models import CommonConfig
-from fyersapi.views import get_data_instance
+from account.models import AuthCode
+# from fyersapi.views import get_data_instance
 import time
 
 class FyersPositionDataConsumer(WebsocketConsumer):
@@ -82,10 +82,11 @@ class FyersPositionDataConsumer(WebsocketConsumer):
         hash_object = hashlib.sha256(concatenated_string.encode())
         return hash_object.hexdigest()
 
+from account.models import TokenLogger
 class FyersIndexDataConsumer(WebsocketConsumer):
     def connect(self):
         self.accept()
-
+        self.running_list=[]
         self.last_keyword = self.scope['url_route']['kwargs']['last_keyword']  
         if self.last_keyword == "SENSEX":
             exchnage =  "BSE:"
@@ -98,8 +99,10 @@ class FyersIndexDataConsumer(WebsocketConsumer):
         app_id_hash = self.generate_app_id_hash(self.app_id, secret_key)
         pin = "2772"
         session = self.scope["session"]
-        refresh_data = CommonConfig.objects.filter(param="refresh_token").first()
-        refresh_token = refresh_data.value
+        # refresh_token = TokenLogger.objects.filter(tokenType='refersh_token').order_by('-created_at').first()
+        # refresh_data = CommonConfig.objects.filter(param="refresh_token").first()
+        refresh_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcGkuZnllcnMuaW4iLCJpYXQiOjE3Mjc4NDgwMjMsImV4cCI6MTcyOTEyNTAwMywibmJmIjoxNzI3ODQ4MDIzLCJhdWQiOlsieDowIiwieDoxIiwieDoyIiwiZDoxIiwiZDoyIiwieDoxIiwieDowIl0sInN1YiI6InJlZnJlc2hfdG9rZW4iLCJhdF9oYXNoIjoiZ0FBQUFBQm1fTjVYQnE5Qkc1N0xFbmFxbW5tZEZKdzRoX3VHTk5jTHB2RXZhaUgxek8xMFZBZ2NKcElWbjJzNThiZFRpN01VTy1ub0NZSklvbm1va2NtNmd3RmxHUUpURHF1REhmclY4VW40QWdFUVBwYUlqRkk9IiwiZGlzcGxheV9uYW1lIjoiU0FUSEVFU0ggQVJVTVVHSEFOIiwib21zIjoiSzEiLCJoc21fa2V5IjoiNTk4YWRlMGU1MzRjOThiNzE0NDQ3MTBhNDk2NGE5ZmFjNWRmMzZmY2U5MTc5YjkzZWU4NTllY2EiLCJmeV9pZCI6IllTMDUxNDEiLCJhcHBUeXBlIjoxMDAsInBvYV9mbGFnIjoiTiJ9.g-zxTsXw3ruq6cpavTgeMmWc_a2ke_tV5Yo24zOiZJk'
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", refresh_token)
         
         url = "https://api-t1.fyers.in/api/v3/validate-refresh-token"
         headers = {
@@ -111,8 +114,9 @@ class FyersIndexDataConsumer(WebsocketConsumer):
             "refresh_token": refresh_token,
             "pin": pin
         }
-
         response = requests.post(url, headers=headers, json=data)
+
+        
         if response.status_code == 200:
             json_response = response.json()
             self.access_token = json_response.get("access_token")
@@ -135,7 +139,11 @@ class FyersIndexDataConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         data_type = "SymbolUpdate"
-        self.fyers.unsubscribe(symbols=self.allsymbols, data_type=data_type)
+        self.closing_symbols = self.running_list
+        self.running_list = []
+        print('closing_symbolsclosing_symbolsclosing_symbols', self.closing_symbols)
+        self.fyers.unsubscribe(symbols=self.closing_symbols, data_type=data_type)
+        
         self.close()
 
     def on_open(self):
@@ -145,72 +153,85 @@ class FyersIndexDataConsumer(WebsocketConsumer):
         self.fyers.keep_running()
 
     def on_message(self, message):
-        self.send(text_data=f"{message}")
+        try:
+            data = json.loads(message) if isinstance(message, str) else message
+            symbol = data.get('symbol')
+
+            if symbol and 'ltp' in data:
+                if symbol not in self.running_list:
+                    self.running_list.append(symbol)
+
+                if self.checking_key in symbol or (self.checking_key == "NSE:BANKNIFTY" and symbol == "NSE:NIFTYBANK-INDEX"):
+                    formatted_message = {
+                        'symbol': symbol,
+                        'ltp': data['ltp'],
+                        'type': data.get('type', 'unknown')
+                    }
+                    self.send(text_data=json.dumps(formatted_message))
+            else:
+                print(f"Ignoring message with unmatched symbol: {symbol}")
+
+        except json.JSONDecodeError:
+            self.send(text_data="Error decoding message")
+        except Exception as e:
+            self.send(text_data=f"Error processing message: {str(e)}")
 
     def on_error(self, message):
         self.send(text_data=f"Error: {message}")
 
     def on_close(self, message):
         data_type = "SymbolUpdate"
+        self.closing_symbols = self.running_list
+        self.running_list = []
+        print('closing_symbolsclosing_symbolsclosing_symbols', self.closing_symbols)
         self.fyers.unsubscribe(symbols=self.allsymbols, data_type=data_type)
+        
         self.close()
-        self.send(text_data=f"Connection closed: {message}")
 
     @staticmethod
     def generate_app_id_hash(client_id, secret_key):
         concatenated_string = f"{client_id}:{secret_key}"
-        hash_object = hashlib.sha256(concatenated_string.encode())
-        return hash_object.hexdigest()
-    
+        return hashlib.sha256(concatenated_string.encode()).hexdigest()
+
     def getOptionStrikes(self):
         self.fyers = fyersModel.FyersModel(client_id=self.app_id, is_async=False, token=self.access_token, log_path="")
-        
-        data = {
-            "symbol": self.symbols[0],
-            "strikecount": 1,
-        }
-        
+        data = {"symbol": self.symbols[0], "strikecount": 1}
+
         try:
             self.expiry_response = self.fyers.optionchain(data=data)
             first_expiry_ts = self.expiry_response['data']['expiryData'][0]['expiry']
-            
+
             if first_expiry_ts:
-                options_data = {
-                    "symbol": self.symbols[0],
-                    "strikecount": 4,
-                    "timestamp": first_expiry_ts
-                }
-                
+                self.checking_key = self.symbols[0].split('-')[0]
+                self.checking_key = "NSE:BANKNIFTY" if self.checking_key == "NSE:NIFTYBANK" else self.checking_key
+                self.checking_key = "NSE:NIFTY" if self.checking_key == "NSE:NIFTY50" else self.checking_key
+
+                options_data = {"symbol": self.symbols[0], "strikecount": 4, "timestamp": first_expiry_ts}
                 response = self.fyers.optionchain(data=options_data)
                 options_chain = response['data']['optionsChain']
-                
-                pe_options_sorted = sorted(
-                    [option for option in options_chain if option['option_type'] == 'PE'],
-                    key=lambda x: x['strike_price'],
-                    reverse=True
-                )
-                ce_options_sorted = sorted(
-                    [option for option in options_chain if option['option_type'] == 'CE'],
-                    key=lambda x: x['strike_price']
-                )
-                
+
+                pe_options_sorted = sorted([option for option in options_chain if option['option_type'] == 'PE'],
+                                           key=lambda x: x['strike_price'], reverse=True)
+                ce_options_sorted = sorted([option for option in options_chain if option['option_type'] == 'CE'],
+                                           key=lambda x: x['strike_price'])
+
                 self.pe_symbols = [option['symbol'] for option in pe_options_sorted]
                 self.ce_symbols = [option['symbol'] for option in ce_options_sorted]
-                
                 symbol_list = self.ce_symbols + self.pe_symbols
                 return symbol_list
 
         except (KeyError, AttributeError, IndexError, Exception) as e:
-            error_message = f'Error occurred: {str(e)}'
-            print("Error occurred while fetching option data:", error_message)
-            
-        return []
+            print(f"Error occurred while fetching option data: {str(e)}")
+
+        return [], []
 
     def receive(self, text_data):
         message = json.loads(text_data)
-        action = message.get('action')
-
-        if action == 'disconnect':
+        if message.get('action') == 'disconnect':
             data_type = "SymbolUpdate"
-            self.fyers.unsubscribe(symbols=self.allsymbols, data_type=data_type)
+            self.closing_symbols = self.running_list
+            self.running_list = []
+            print('closing_symbolsclosing_symbolsclosing_symbols', self.closing_symbols)
+            self.fyers.unsubscribe(symbols=self.closing_symbols, data_type=data_type)
+            
             self.close()
