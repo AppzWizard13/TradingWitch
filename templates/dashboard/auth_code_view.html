@@ -6,29 +6,27 @@
 <div class="container-fluid" style="max-width:none">
     <div class="card mt-5">
         <div class="card-body">
-            <h5 class="card-title fw-semibold mb-4">Token Logger</h5>
-            <!-- TokenLogger Listing Table -->
+            <h5 class="card-title fw-semibold mb-4">Auth Codes</h5>
+            <!-- AuthCode Listing Table -->
             <div class="table-responsive"> <!-- Make table responsive -->
                 <table class="table table-bordered">
                     <thead>
                         <tr>
                             <th class="text-nowrap">SL No</th> <!-- Ensure nowrap for serial numbers -->
-                            <th class="text-nowrap">Token Type</th>
-                            <th class="text-nowrap">Token Value</th>
+                            <th class="text-nowrap">Auth Code</th>
                             <th class="text-nowrap">Created At</th>
                             <th class="text-nowrap">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                      {% for token in tokens %}
+                      {% for authcode in authcodes %}
                       <tr>
                           <td>{{ forloop.counter }}</td> <!-- Serial Number -->
-                          <td>{{ token.tokenType }}</td> <!-- Token Type -->
-                          <td>{{ token.tokenValue|slice:":50" }}</td> <!-- Slice to show first 50 characters of the token value -->
-                          <td>{{ token.created_at }}</td> <!-- Token creation time -->
+                          <td>{{ authcode.code|slice:":50" }}</td> <!-- Slice to show first 50 characters -->
+                          <td>{{ authcode.created_at }}</td>
                           <td>
                               <!-- Copy Button -->
-                              <button class="btn btn-info btn-sm" onclick="copyToClipboard('{{ token.tokenValue }}')">Copy</button>
+                              <button class="btn btn-info btn-sm" onclick="copyToClipboard('{{ authcode.code }}')">Copy</button>
                           </td>
                       </tr>
                       {% endfor %}
@@ -39,14 +37,14 @@
     </div>
 </div>
 
-<!-- JavaScript for copying token value -->
+<!-- JavaScript for copying code -->
 <script>
-    // Function to copy the token value to clipboard
-    function copyToClipboard(tokenValue) {
-        navigator.clipboard.writeText(tokenValue).then(function() {
-            alert('Token value copied to clipboard!');
+    // Function to copy the auth code to clipboard
+    function copyToClipboard(code) {
+        navigator.clipboard.writeText(code).then(function() {
+            alert('Code copied to clipboard!');
         }, function(err) {
-            alert('Failed to copy token value: ' + err);
+            alert('Failed to copy code: ' + err);
         });
     }
 </script>
