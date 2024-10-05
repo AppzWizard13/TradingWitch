@@ -92,7 +92,8 @@ CSRF_TRUSTED_ORIGINS = [NGROK_URL]
 
 
 # Define the path to your CSV file
-CSV_FILE_PATH = os.path.join(BASE_DIR, 'security_list.csv')
+CSV_FILE_PATH = os.path.join(BASE_DIR, 'api-scrip-master.csv')
+DEFAULT_BROKERAGE=20
 
 
 

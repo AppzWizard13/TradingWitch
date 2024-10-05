@@ -1,29 +1,26 @@
-from django.shortcuts import render
-from django.contrib.auth import login, authenticate
 from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm
-from django.contrib import messages
-from django.views import View 
+from django.contrib import messages, auth
+from django.views import View
 from django.views.generic import TemplateView
-from account.forms import UserLoginForm
-from django.contrib import auth
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import logout
-from django.shortcuts import render, redirect
-from django.contrib import auth, messages
-from fyers_apiv3 import fyersModel
+from django.http import JsonResponse, HttpResponse
 from django.conf import settings
-from account.models import AuthCode
-from .models import AuthCode
-from dhanhq import dhanhq
-from django.views.generic import TemplateView
-from django.shortcuts import render
 from datetime import datetime
 import json
 import time
-from .models import TokenLogger
+from account.forms import UserLoginForm
+from account.models import AuthCode
+from .models import AuthCode, TokenLogger
+from fyers_apiv3 import fyersModel
+from fyersapi.models import TradingConfigurations
+from dhanhq import dhanhq
+from django.views.decorators.csrf import csrf_exempt
+
+
 
 # Create your views here.
 class HomePageView( TemplateView):
@@ -102,16 +99,6 @@ class UserloginView(View):
         return render(request, template, context)
 
 
-from django.shortcuts import redirect
-from django.http import HttpResponse
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import TemplateView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.contrib import messages
-from datetime import datetime
-import json
-import time
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     login_url = '/login'
@@ -186,6 +173,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 # Store the tokens in the database
                 TokenLogger.objects.create(tokenType='access_token', tokenValue=access_token)
                 TokenLogger.objects.create(tokenType='refresh_token', tokenValue=refresh_token)
+                # Add tokens to session
+                request.session['access_token'] = access_token
+                request.session['refresh_token'] = refresh_token
+
                 print('Access Token:', access_token)
                 print('Refresh Token:', refresh_token)
             else:
@@ -227,12 +218,7 @@ class wesocketTest(TemplateView):
 
 
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth import authenticate
-from django.conf import settings
-from datetime import datetime
-import json
+
 
 @csrf_exempt
 def login_view(request):
@@ -285,11 +271,6 @@ def login_view(request):
     return JsonResponse({'error': 'Invalid HTTP method'}, status=405)
 
 
-from django.http import JsonResponse
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from django.contrib.auth import logout
 
 @csrf_exempt
 def api_logout(request):
@@ -310,8 +291,6 @@ def csrf_token_view(request):
     print("csrf_tokencsrf_tokencsrf_token", csrf_token)
     return JsonResponse({'csrf_token': csrf_token}, status=200)
 
-from django.http import JsonResponse
-from fyersapi.models import TradingConfigurations
 
 def fetch_trade_configurations(request):
     try:

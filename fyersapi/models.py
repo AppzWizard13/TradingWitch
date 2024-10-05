@@ -51,3 +51,15 @@ class TradingConfigurations(models.Model):
 
     def __str__(self):
         return f"Trading Configurations - ID: {self.pk}"
+
+
+class OpenOrderTempData(models.Model):
+    symbol = models.CharField(max_length=200)
+    order_total = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    premium_price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    average_price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    sl_price = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    exp_loss = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    quantity = models.IntegerField(null=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    is_averaged = models.IntegerField(null=True)

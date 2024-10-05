@@ -1,15 +1,19 @@
 from . import views
 from django.urls import path
 from django.contrib import admin
-from account.views import UserloginView, DashboardView, HomePageView
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
-    # # landing page
-    # path('', views.HomePageView.as_view(), name='home'),
-    # # login 
-    # path('login/', views.UserloginView.as_view(), name = 'login'),
-    # # dashboard 
-    # path('dashboard', views.DashboardView.as_view(), name='dashboard'),
+    path('options-chain-view/<str:slug>/', views.OptionChainView.as_view(), name='options_chain_view'),
+    path('update-data-instance/', views.update_data_instance, name='update_data_instance'),
+
+    path('close_all_positions', views.close_all_positions, name='close_all_positions'),
+    path('get_open_temp_data/', views.get_open_temp_data, name='get_open_temp_data'),
+
+    path('instant-buy-order/', views.instantBuyOrderWithSL, name='instant_buy_order'),
+
+
+
 
 
 

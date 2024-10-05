@@ -66,37 +66,43 @@
               <span class="hide-menu">OPTION CHAIN</span>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-buttons.html" aria-expanded="false">
-                <span>
-                  <i class="ti ti-article"></i>
-                </span>
-                <span class="hide-menu">MIDCAP-NIFTY</span>
+              <a class="sidebar-link" href="{% url 'options_chain_view' slug='MIDCPNIFTY' %}" aria-expanded="false">
+                  <span><i class="ti ti-article"></i></span>
+                  <span class="hide-menu">MIDCAPNIFTY</span>
               </a>
-            </li>
+          </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-alerts.html" aria-expanded="false">
+              <a class="sidebar-link"  href="{% url 'options_chain_view' slug='FINNIFTY' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-alert-circle"></i>
                 </span>
-                <span class="hide-menu">FIN-NIFTY</span>
+                <span class="hide-menu">FINNIFTY</span>
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-card.html" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'options_chain_view' slug='NIFTYBANK' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-cards"></i>
                 </span>
-                <span class="hide-menu">BANK-NIFTY</span>
+                <span class="hide-menu">BANK NIFTY</span>
               </a>
             </li>
             <li class="sidebar-item">
-              <a class="sidebar-link" href="./ui-forms.html" aria-expanded="false">
+              <a class="sidebar-link" href="{% url 'options_chain_view' slug='NIFTY50' %}" aria-expanded="false">
                 <span>
                   <i class="ti ti-file-description"></i>
                 </span>
                 <span class="hide-menu">NIFTY</span>
               </a>
             </li>
+             <li class="sidebar-item" disabled>
+              <a class="sidebar-link" href="{% url 'options_chain_view' slug='SENSEX' %}" aria-expanded="false">
+                <span>
+                  <i class="ti ti-file-description"></i>
+                </span>
+                <span class="hide-menu">SENSEX</span>
+              </a>
+            </li> 
             <li class="nav-small-cap">
               <i class="ti ti-dots nav-small-cap-icon fs-4"></i>
               <span class="hide-menu">AUTH22</span>
@@ -192,6 +198,71 @@
           </ul>
           <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
             <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
+              <style>
+                .custom-primary {
+                  background-color: #2d88e9; /* Blue */
+                  color: #ffffff; /* white  text */
+                }
+              
+                .custom-danger {
+                  background-color: #dd2000; /* Red */
+                  color: #ffffff; /* white  text */
+                }
+              
+                .custom-success {
+                  background-color: #0eb51f; /* Green */
+                  color: #ffffff; /* white  text */
+                }
+              
+                .custom-warning {
+                  background-color: #ffd861; /* Yellow */
+                  color: #000000; /* Black text */
+                }
+              
+                .custom-info {
+                  background-color: #17a2b8; /* Teal */
+                  color: #ffffff; /* white  text */
+                }
+                .custom-light {
+                  background-color: #afbfb1; /* Teal */
+                  color: #000000; /* white  text */
+                }
+              </style>
+                        
+            {% comment %} ======================================================================================================= {% endcomment %}
+            {% if options_data.data.optionsChain %}
+            <div class="container mt-1">
+              <div class="row justify-content-center">
+                <div class="col-12 my-1">
+                  <div class="row">
+                    <div class="col-12 col-md-3 ">
+                      <div class="alert custom-primary text-center m-1" role="alert">
+                        <p id="openPlData" class="mb-0 fs-5 fw-bolder">P/L DATA</p>
+                        <input type="hidden" name="open-symbol" value="">
+                        <input type="hidden" name="open-qty" value="">
+                        <input type="hidden" name="open-traded-price" value="">
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3 ">
+                      <div class="alert custom-primary text-center m-1" role="alert">
+                        <p id="openOrderData" class="mb-0 fs-5 fw-bolder">POSITIONS</p>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3 ">
+                      <div class="alert custom-primary text-center m-1" role="alert">
+                        <p id="expLossAmount" class="mb-0 fs-5 fw-bolder">STOPLOSS</p>
+                      </div>
+                    </div>
+                    <div class="col-12 col-md-3 ">
+                      <div class="alert custom-primary text-center m-1" role="alert">
+                        <p id="openAmountData" class="mb-0 fs-5 fw-bolder">DEPLOYED</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endif %}
               <!-- Main Content -->
               {% comment %} <div class="main-content">
                 <button id="toggleSidebarBtn" class="btn btn-primary">Toggle Sidebar</button>
@@ -493,15 +564,14 @@
         
     
         </div>
-        {% endblock %}
         <div class="py-6 px-6 text-center">
           <p class="mb-0 fs-4">Design and Developed by <a href="https://adminmart.com/" target="_blank" class="pe-1 text-primary text-decoration-underline">TradingWitch</a> Distributed by <a href="https://themewagon.com">TradingWitch</a></p>
         </div>
       </div>
     </div>
   </div>
-  <script>
-  </script>
+  {% endblock %}
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
   <script src="{% static 'dashboard/assets/libs/jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js' %}"></script>
   <script src="{% static 'dashboard/assets/js/sidebarmenu.js' %}"></script>

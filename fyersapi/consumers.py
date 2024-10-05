@@ -99,10 +99,10 @@ class FyersIndexDataConsumer(WebsocketConsumer):
         app_id_hash = self.generate_app_id_hash(self.app_id, secret_key)
         pin = "2772"
         session = self.scope["session"]
-        # refresh_token = TokenLogger.objects.filter(tokenType='refersh_token').order_by('-created_at').first()
+        refresh_token = TokenLogger.objects.filter(tokenType='refresh_token').order_by('-id').first()
         # refresh_data = CommonConfig.objects.filter(param="refresh_token").first()
-        refresh_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcGkuZnllcnMuaW4iLCJpYXQiOjE3Mjc4NDgwMjMsImV4cCI6MTcyOTEyNTAwMywibmJmIjoxNzI3ODQ4MDIzLCJhdWQiOlsieDowIiwieDoxIiwieDoyIiwiZDoxIiwiZDoyIiwieDoxIiwieDowIl0sInN1YiI6InJlZnJlc2hfdG9rZW4iLCJhdF9oYXNoIjoiZ0FBQUFBQm1fTjVYQnE5Qkc1N0xFbmFxbW5tZEZKdzRoX3VHTk5jTHB2RXZhaUgxek8xMFZBZ2NKcElWbjJzNThiZFRpN01VTy1ub0NZSklvbm1va2NtNmd3RmxHUUpURHF1REhmclY4VW40QWdFUVBwYUlqRkk9IiwiZGlzcGxheV9uYW1lIjoiU0FUSEVFU0ggQVJVTVVHSEFOIiwib21zIjoiSzEiLCJoc21fa2V5IjoiNTk4YWRlMGU1MzRjOThiNzE0NDQ3MTBhNDk2NGE5ZmFjNWRmMzZmY2U5MTc5YjkzZWU4NTllY2EiLCJmeV9pZCI6IllTMDUxNDEiLCJhcHBUeXBlIjoxMDAsInBvYV9mbGFnIjoiTiJ9.g-zxTsXw3ruq6cpavTgeMmWc_a2ke_tV5Yo24zOiZJk'
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", refresh_token)
+        # refresh_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJhcGkuZnllcnMuaW4iLCJpYXQiOjE3Mjc4NDgwMjMsImV4cCI6MTcyOTEyNTAwMywibmJmIjoxNzI3ODQ4MDIzLCJhdWQiOlsieDowIiwieDoxIiwieDoyIiwiZDoxIiwiZDoyIiwieDoxIiwieDowIl0sInN1YiI6InJlZnJlc2hfdG9rZW4iLCJhdF9oYXNoIjoiZ0FBQUFBQm1fTjVYQnE5Qkc1N0xFbmFxbW5tZEZKdzRoX3VHTk5jTHB2RXZhaUgxek8xMFZBZ2NKcElWbjJzNThiZFRpN01VTy1ub0NZSklvbm1va2NtNmd3RmxHUUpURHF1REhmclY4VW40QWdFUVBwYUlqRkk9IiwiZGlzcGxheV9uYW1lIjoiU0FUSEVFU0ggQVJVTVVHSEFOIiwib21zIjoiSzEiLCJoc21fa2V5IjoiNTk4YWRlMGU1MzRjOThiNzE0NDQ3MTBhNDk2NGE5ZmFjNWRmMzZmY2U5MTc5YjkzZWU4NTllY2EiLCJmeV9pZCI6IllTMDUxNDEiLCJhcHBUeXBlIjoxMDAsInBvYV9mbGFnIjoiTiJ9.g-zxTsXw3ruq6cpavTgeMmWc_a2ke_tV5Yo24zOiZJk'
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", refresh_token.tokenValue)
         
         url = "https://api-t1.fyers.in/api/v3/validate-refresh-token"
         headers = {
@@ -111,7 +111,7 @@ class FyersIndexDataConsumer(WebsocketConsumer):
         data = {
             "grant_type": "refresh_token",
             "appIdHash": app_id_hash,
-            "refresh_token": refresh_token,
+            "refresh_token": refresh_token.tokenValue,
             "pin": pin
         }
         response = requests.post(url, headers=headers, json=data)
@@ -119,6 +119,7 @@ class FyersIndexDataConsumer(WebsocketConsumer):
         
         if response.status_code == 200:
             json_response = response.json()
+            print('json_responsejson_responsejson_responsejson_response', json_response)
             self.access_token = json_response.get("access_token")
             self.getoptionsymbols = self.getOptionStrikes()
             self.fyers = data_ws.FyersDataSocket(
