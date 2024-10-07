@@ -14,12 +14,8 @@ urlpatterns = [
     path('dashboard', views.DashboardView.as_view(), name='dashboard'),
     # auth code view  
     path('authcodes/', views.AuthCodeListView.as_view(), name='authcode-list'),
-
     path('token-logger/', views.TokenLoggerListView.as_view(), name='token_logger_list'),
-
     path('websocket-test/', views.wesocketTest.as_view(), name='web_socket_test'),
-
-
 
     path('api/login/', views.login_view, name='api_login'),
     path('api/logout/', views.api_logout, name='api_logout'),

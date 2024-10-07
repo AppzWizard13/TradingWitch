@@ -29,9 +29,7 @@ class OptionChainView(View):
             total_account_balance = dhan_fund['data']['availabelBalance']
             realised_profit = "10000000"
 
-        # Use the updated field names from TradingConfigurations
-        # forward_trailing_points = conf_data.forward_trailing_points
-        # reverse_trailing_points = conf_data.reverse_trailing_points
+
         active_broker = conf_data.active_broker
         scalping_mode = conf_data.scalping_mode
         cost = conf_data.scalping_amount_limit if scalping_mode else conf_data.capital_limit_per_order
@@ -53,10 +51,10 @@ class OptionChainView(View):
                 total_order_status = get_traded_order_count_dhan(orderlist)
                 positions_data = dhan.get_positions()
                 print("positions_datapositions_datapositions_datapositions_data", positions_data)
-                if not positions_data['data'] == []:
-                    realized_pl = float(positions_data['data']['realizedProfit'])
+                if not  positions_data['data'] == []:
+                    realized_pl = sum(position.get('realizedProfit', 0) for position in positions_data['data'])
                 else:
-                    realized_pl = 0
+                    realized_pl = 0.00
 
             tax = calculate_tax(cost)
             default_brokerage = settings.DEFAULT_BROKERAGE + tax
@@ -138,7 +136,8 @@ class OptionChainView(View):
             'actual_profit': actual_profit,
             'options_data': response,
             'active_broker': active_broker,
-            'progress_percentage': progress_percentage
+            'progress_percentage': progress_percentage,
+            'realized_pl' : realized_pl
         })
         return render(request, template, context)
 
@@ -160,28 +159,6 @@ def calculate_tax(cost):
     tax = a * cost + b
     return tax
 
-def update_latest_data(request):
-    data_instance = get_data_instance(request)
-
-    positions = data_instance.positions()
-    TradingData.objects.update_or_create(
-        category='POSITIONS',
-        defaults={'data': positions, 'last_updated': timezone.now()}
-    )
-
-    orders = data_instance.orderbook()
-    TradingData.objects.update_or_create(
-        category='ORDERS',
-        defaults={'data': orders, 'last_updated': timezone.now()}
-    )
-
-    funds = data_instance.funds()
-    TradingData.objects.update_or_create(
-        category='FUNDS',
-        defaults={'data': funds, 'last_updated': timezone.now()}
-    )
-
-    return HttpResponse('Data saved')
 
 
 def get_data_instance(request):
@@ -211,33 +188,52 @@ def get_default_lotsize(index):
         return False
 
 # ---------------------------------------------------------------------------------------------------------------------------
+
 from django.http import JsonResponse
 def update_data_instance(request):
-    context = {}
-    client_id = settings.FYERS_APP_ID
-    access_token = request.session.get('access_token')
-    total_order_status=0
+    try: 
+        context = {}
+        dhan_client_id = settings.DHAN_CLIENTID
+        dhan_access_token = settings.DHAN_ACCESS_TOKEN
+        dhan = dhanhq(dhan_client_id, dhan_access_token)
 
-    if access_token:
-        data_instance = get_data_instance(request)
-        # fyers = fyersModel.FyersModel(client_id=client_id, is_async=False, token=access_token, log_path="")
-        positions_data = data_instance.positions()
-        order_data = data_instance.orderbook()
-        fund_data = data_instance.funds()
-        if "orderBook" in order_data:
-            total_order_status = sum(1 for order in order_data["orderBook"] if order["status"] == 2)
-        # Process the response and prepare the data
-        data = { 'positions': positions_data,
-                'total_order_status': total_order_status ,
+        orderlist = dhan.get_order_list()
+        dhan_fund = dhan.get_fund_limits()
+        positions_data = dhan.get_positions()
+        if not  positions_data['data'] == []:
+            realized_pl = sum(position.get('realizedProfit', 0) for position in positions_data['data'])
+        else:
+            realized_pl = 0.00
+
+
+        print("----------------------------", positions_data)
+        total_order_status = get_traded_order_count_dhan(orderlist)
+
+        try:
+            latest_active_position = OpenOrderTempData.objects.latest('last_updated')
+            open_position_symbol = latest_active_position.symbol
+            open_position_ltp = latest_active_position.average_price 
+            open_position_sl = latest_active_position.sl_price    
+
+        except OpenOrderTempData.DoesNotExist:
+            open_position_symbol = None
+            open_position_ltp = 0
+            open_position_sl = 0
+
+        data = { 
+                'positions': positions_data,
+                'total_order_status': total_order_status,
                 'fund_data': fund_data,
-                'order_data': order_data
-                }  # Modify this according to your response structure
-        
-        # print("datadatadata", data)
+                'order_data': order_data,
+                'open_position_symbol': open_position_symbol,
+                'open_position_ltp' : open_position_ltp,
+                'open_position_sl' : open_position_sl,
+                'realized_pl' : realized_pl
+                } 
         return JsonResponse(data)
-    else:
-        return JsonResponse({'error': 'Access token not found'}, status=400)
-    
+    except Exception as e:
+        print("Error:", e)
+        return JsonResponse({'error': str(e)}, status=400)
 # ---------------------------------------------------------------------------------------------------------------------------
 
 from asgiref.sync import sync_to_async
@@ -257,10 +253,6 @@ def delete_open_order_temp_data():
 def close_all_positions(request):
     conf_data = TradingConfigurations.objects.filter(is_active=True).first()
 
-    # Uncomment to enable broker validation
-    # if conf_data.active_broker != "DHAN":
-    #     return JsonResponse({'message': 'Invalid broker', 'code': '-1'})
-    
     dhan_client_id = settings.DHAN_CLIENTID
     dhan_access_token = settings.DHAN_ACCESS_TOKEN
     dhan = dhanhq(dhan_client_id, dhan_access_token)
@@ -414,10 +406,10 @@ async def instantBuyOrderWithSL(request):
 
     # Get trading configurations asynchronously
     trade_config_data = await sync_to_async(
-        lambda: TradingConfigurations.objects.filter(active_broker='DHAN').order_by('-last_updated').values(
+        lambda: TradingConfigurations.objects.filter(is_active=True).order_by('-last_updated').values(
             'scalping_mode', 'maximum_trade_count', 'order_quantity_mode', 'default_order_quantity',
             'is_over_trade_active', 'scalping_amount_limit', 'capital_limit_per_order',
-            'scalping_stop_loss', 'default_stop_loss', 'stop_loss_limit_slippage', 'averaging_limit', 'is_averaged'
+            'scalping_stop_loss', 'default_stop_loss', 'stop_loss_limit_slippage', 'averaging_limit'
         ).first()
     )()
 
@@ -425,9 +417,6 @@ async def instantBuyOrderWithSL(request):
         return JsonResponse({'message': "Trading configuration not found"})
 
     get_lot_count = await sync_to_async(get_default_lotsize)(ex_symbol1)
-
-    if trade_config_data['is_averaged'] >= trade_config_data['averaging_limit']:
-        return JsonResponse({'message': "Remind Rules : You cannot Average more than Averaging limit !"})
 
     # Check if max order count limit is reached
     if trade_config_data['is_over_trade_active']:
@@ -439,6 +428,13 @@ async def instantBuyOrderWithSL(request):
         return JsonResponse({'message': "Remind Rules : Unable to place another Symbol Order Now."})
 
     tempDatainstance1 = await sync_to_async(OpenOrderTempData.objects.filter(Q(symbol=der_symbol)).first)()
+    
+    if tempDatainstance1:
+        is_averaged_value = int(tempDatainstance1.averaging_count) if tempDatainstance1.averaging_count is not None else 0
+        averaging_limit = int(trade_config_data.get('averaging_limit', 0))  # Ensure the limit is fetched as an int with a default value
+
+        if is_averaged_value >= averaging_limit:
+            return JsonResponse({'message': "Remind Rules : You cannot Average more than Averaging limit !"})
     
     # Calculate order quantity based on mode
     if trade_config_data['order_quantity_mode'] == "MANUAL":
@@ -460,9 +456,8 @@ async def instantBuyOrderWithSL(request):
     # Convert the derivative symbol
     formated_der_symbol, formatted_expiry_date, formatted_custom_symbol = convert_derivative_symbol(der_symbol, ex_symbol1)
     csv_result = search_csv(formatted_custom_symbol)
-    print('csv_resultcsv_result', csv_result)
     security_id = csv_result[0]['SEM_SMST_SECURITY_ID']
-    print('security_idsecurity_id', security_id)
+
 
     # Place the buy order
     buy_response = dhan.place_order(
@@ -475,7 +470,7 @@ async def instantBuyOrderWithSL(request):
         price=0,
         validity=dhan.DAY,
     )
-    print('buy_responsebuy_responsebuy_response', buy_response)
+
     if buy_response['status'] == 'failure':
         return JsonResponse({'message': buy_response['remarks']['message']})
 
@@ -495,7 +490,7 @@ async def instantBuyOrderWithSL(request):
 
         # Check and update max trade count
         if traded_order_count >= trade_config_data['maximum_trade_count']:
-            await sync_to_async(TradingConfigurations.objects.filter(active_broker='DHAN').update)(is_over_trade_active=True)
+            await sync_to_async(TradingConfigurations.objects.filter(is_active=True).update)(is_over_trade_active=True)
 
         # Check for pending orders
         get_pending_order_data = get_pending_orders_dhan(orderlist)
@@ -521,7 +516,7 @@ async def instantBuyOrderWithSL(request):
                                                            quantity=updated_qty,
                                                            average_price=(tempDatainstance1.order_total + (updated_qty * ltp)) / updated_qty,
                                                            exp_loss=(tempDatainstance1.exp_loss + (traded_price - tempDatainstance1.sl_price) * updated_qty),
-                                                           is_averaged=tempDatainstance1.is_averaged + 1)
+                                                           averaging_count=tempDatainstance1.averaging_count + 1)
 
             return JsonResponse({'message': "BUY/SL-L Placed Successfully", 'symbol': der_symbol})
 
@@ -555,7 +550,7 @@ async def instantBuyOrderWithSL(request):
             quantity=order_qty,
             sl_price=stoploss_price,
             exp_loss=(traded_price - stoploss_price) * order_qty,
-            is_averaged=0
+            averaging_count=0
         )
 
         return JsonResponse({'message': "BUY/SL-L Placed Successfully", 'symbol': der_symbol, 'qty': order_qty, 'traded_price': traded_price})

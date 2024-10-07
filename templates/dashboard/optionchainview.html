@@ -179,43 +179,42 @@
                   <div  id="info_form" class="container-fluid mt-5">
                     <div class="row mt-4" >
                         <!-- Web View -->
-                        <p class="card-title fw-semibold fs-4 mt-4" id="optitle">OPTION CHAIN</p>
-                            <div class="row mt-5" style="padding-inline:0px; margin:0px;" >
-                                <div class="col-12">
-                                    <input class="form-control fw-bolder fs-5 mt-5 " disabled name="expiry" value="{{expiry_response}}">
-                                </div>
-                                <div class="col-6">
-                                    <input class="form-control fw-bolder fs-5 my-2" disabled name="ex_symbol" value="{{ option.ex_symbol }}">
-                                </div>
-                                <div class="col-6" id="index-cont" >
-                                    <input class="form-control fw-bolder fs-5 my-2" id="index" disabled name="ltp" value="0">
-                                </div>
-                            </div>
-                            <div class="row" style="margin: 0px;">
-                                <div class="col-6 mt-1" style="padding: 0px;">
-                                    <div style="height:55px; margin-right:5px!important;" role="alert" class="alert alert-danger d-flex flex-row justify-content-between align-items-center p-0 m-0">
-                                        <p id="exp_stoploss_amount" style="margin-left:20px; font-size:16px;" class="mb-0 fw-bolder">Exp Loss: &nbsp;&nbsp;{{exp_loss}}</p>
+                            <p class="card-title fw-semibold fs-4 mt-4" id="optitle">OPTION CHAIN</p>
+                                <div class="row mt-5" style="padding-inline:0px; margin:0px;" >
+                                    <div class="col-12">
+                                        <input class="form-control fw-bolder fs-5 mt-5 " disabled name="expiry" value="{{expiry_response}}">
+                                    </div>
+                                    <div class="col-6">
+                                        <input class="form-control fw-bolder fs-5 my-2" disabled name="ex_symbol" value="{{ option.ex_symbol }}">
+                                    </div>
+                                    <div class="col-6" id="index-cont" >
+                                        <input class="form-control fw-bolder fs-5 my-2" id="index" disabled name="ltp" value="0">
                                     </div>
                                 </div>
-                                <div class="col-6 mt-1" style="padding: 0px;">
-                                    <div style="height:55px; margin-left:5px!important;" role="alert" class="alert alert-success d-flex flex-row justify-content-between align-items-center p-0 m-0">
-                                        <p id="exp_profit_amount" style="margin-left:20px; font-size:16px;" class="mb-0 fw-bolder">Exp Profit: &nbsp;&nbsp;{{exp_profit}}</p>
+                                <div class="row" style="margin: 0px;">
+                                    <div class="col-6 mt-1" style="padding: 0px;">
+                                        <div style="height:55px; margin-right:5px!important;" role="alert" class="alert alert-danger d-flex flex-row justify-content-between align-items-center p-0 m-0">
+                                            <p id="exp_stoploss_amount" style="margin-left:20px; font-size:16px;" class="mb-0 fw-bolder">Exp Loss: &nbsp;&nbsp;{{exp_loss}}</p>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 mt-1" style="padding: 0px;">
+                                        <div style="height:55px; margin-left:5px!important;" role="alert" class="alert alert-success d-flex flex-row justify-content-between align-items-center p-0 m-0">
+                                            <p id="exp_profit_amount" style="margin-left:20px; font-size:16px;" class="mb-0 fw-bolder">Exp Profit: &nbsp;&nbsp;{{exp_profit}}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="container-fluid my-2 py-2">
-                                <div class="row">
-                                      <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
-                                        <button id="switch_scalp_mode" class="btn btn-primary spinner btn-lg btn-block w-100 h-100 fw-bold disabled " style="border-radius: 10px; backgorund-color: blue;">Checking..</button>
-                                    </div> 
+                                <div class="container-fluid my-2 py-2">
+                                    <div class="row">
+                                    <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
+                                        <button id="portfolio_status" class="btn btn-primary spinner btn-lg btn-block w-100 h-100 fw-bold disabled" style="border-radius: 10px; background-color: blue;">
+                                            Portfolio Status<br>{{realized_pl|floatformat:2}}
+                                        </button>
+                                    </div>
                                     <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
                                         <button id="account_balance" class="btn btn-primary spinner btn-lg btn-block w-100 h-100 fw-bold disabled" style="border-radius: 10px; background-color: blue;">
                                             Account Balance<br>{{total_account_balance|floatformat:2}}
                                         </button>
                                     </div>
-                                    {% comment %} <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
-                                        <button id="trailingtodown" class="btn btn-primary btn-lg btn-block w-100 h-100 m-0 fw-bold" style="border-radius: 10px;">TRAIL <i class="ti ti-arrow-down text-warning"></i>{{reverse_trailing_points}}</button>
-                                    </div> {% endcomment %}
                                 </div>
                             </div> 
                         </div>
@@ -253,7 +252,7 @@
                                     <br>
                                     <p class="card-text fs-5 fw-bolder mt-1">&nbsp;&nbsp;PE&nbsp;&nbsp;{{ option.strike_price }}</p>
                                 </h5>
-                                <p class="card-text fs-3 fw-bolder" id="der-ltp-{{ option.symbol }}">LTP: {{ option.ltp }}</p>
+                                <p class="card-text fs-5 fw-bolder" id="der-ltp-{{ option.symbol }}">₹  {{ option.ltp }}</p>
                             </div>
                             <div class="col-4 d-flex justify-content-center align-items-center">
                                 <button class="btn btn-danger btn-lg btn-block w-100 h-100 fw-bolder fs-5 sell-button" style="border-radius: 10px">Sell</button>
@@ -289,7 +288,7 @@
                                     <br>
                                     <p class="card-text fs-5 fw-bolder mt-1">&nbsp;&nbsp;CE&nbsp;&nbsp;{{ option.strike_price }}</p>
                                 </h5>
-                                <p class="card-text fs-3 fw-bolder" id="der-ltp-{{ option.symbol }}">LTP: {{ option.ltp }}</p>
+                                <p class="card-text fs-5 fw-bolder" id="der-ltp-{{ option.symbol }}">₹  {{ option.ltp }}</p>
                             </div>
                             <div class="col-4 d-flex justify-content-center align-items-center">
                                 <button class="btn btn-danger btn-lg btn-block w-100 h-100 fw-bolder fs-5 sell-button" style="border-radius: 10px">Sell</button>
@@ -305,10 +304,6 @@
     </div>
     </div>
     </div>
-
-
-
-
 <div class="container-fluid m-0 p-0">
     <div class="row ">
                     <!-- Web View -->
@@ -497,7 +492,7 @@
                     console.log('Data received:', response);
 
                     // Uncomment below lines to handle total order status and progress bar updates
-                    /*
+                    
                     var totalOrderStatus = response.total_order_status;
                     var orderLimit = {{ order_limit }};
                     var remainingOrders = orderLimit - totalOrderStatus;
@@ -512,7 +507,7 @@
                     } else {
                         $('.progress-bar').addClass('bg-danger').removeClass('bg-success bg-warning');
                     }
-                    */
+                    
                 },
                 error: function(xhr, status, error) {
                     console.error('Error fetching data:', error);
@@ -621,7 +616,7 @@
             // Split the URL by '/'
             let parts = url.split('/');
             // Get the last part of the URL
-            let lastSegment = parts.pop() || parts.pop();  // handle potential trailing slash
+            let lastSegment = parts.pop() || parts.pop(); 
             var exSymbol1 = lastSegment
 
             
@@ -746,7 +741,6 @@
 
         // Function to update the data container with the received message
         function updateData(message, symbolList) {
-            console.log("messagemessagemessage", message)
 
             // Check if the message is a plain text error and not a valid JSON string
             if (message.startsWith('Error:')) {
@@ -757,7 +751,6 @@
                 return; // Stop further processing
             }
             // Show spinner initially
-            // Print the list of symbols
             var dataContainer = document.getElementById("data-index");
             var messageElement = document.querySelector('#index'); // Selecting the existing h1 element
             message = message.replace(/'/g, '"');
@@ -777,8 +770,6 @@
                 var symbol = message['symbol'];
                 symbol = symbol.replace('NSE:', '').replace('-INDEX', '');
                 ltpValue = ltpValue.toFixed(2);
-                // console.log("messagemessagemessage", symbol);
-                // console.log("indexDataindexData", indexData)
                 messageElement.value = ltpValue ; // Replacing the content with the new message
             } else if (message.type === 'sf') {
                 // Handle the case when message type is 'sf'
@@ -786,8 +777,6 @@
                 var symbol = message['symbol'];
                 indexsymbol = symbol.replace('NSE:', '').replace('-INDEX', '');
                 if (!symbolList.includes(symbol)) {
-                    console.log('-----------------------symbolList', symbolList)
-                    console.log("**********************symbol", symbol);
                     // Refresh the page
                     location.reload();
                 }
@@ -809,22 +798,14 @@
                     var currentValue = open_qty * ltpValue;
                     var expenseValue = open_traded_price * open_qty;
                     var plData = (currentValue - expenseValue).toFixed(2);
-                    // Convert plData to a number and round it to two decimal places
                     //****************************************************************************
-
-
-                    // Parse plData to a floating point number
                     var plDataNumber = parseFloat(plData);
-
                     // Format plData to two decimal places
                     var plDataFormatted = plDataNumber.toFixed(2);
-
                     // Determine if plData is negative or positive
                     var plDataIsNegative = plDataNumber < 0;
-
                     // Get a reference to the parent <div> element
                     var parentDivElement = document.getElementById('openPlData').parentElement;
-
                     // Update the class based on plData value
                     if (plDataIsNegative) {
                         parentDivElement.classList.remove('custom-primary', 'custom-success');
@@ -836,10 +817,8 @@
 
                     // Update the innerHTML of the openPlData element
                     document.getElementById('openPlData').innerHTML = 'P/L:&nbsp;&nbsp;' + plDataFormatted+'&nbsp;₹&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + 'LTP:&nbsp;&nbsp;' + ltpValue + "&nbsp;&nbsp;" ;
-                    // console.log("ltpValueltpValue", ltpValue);
                     var ltpElement = document.querySelector('#der-ltp-' + escapedSymbol);
                     ltpElement.textContent = "LTP: " + ltpValue;
-                    // console.log("ltpElementltpElement", ltpElement);
 
                 }
                 if (symbol === hiddenSymbol) {
@@ -857,8 +836,6 @@
             } else {
                 console.log("Fyers server-side issue, please try again later.");
                 return; // Stop further processing if an error occurs
-                // Do something else if the type is neither 'if' nor 'sf'
-                // console.log("Type is not 'if' or 'sf'.");
             }
         }
 

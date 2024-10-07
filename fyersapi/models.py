@@ -62,4 +62,4 @@ class OpenOrderTempData(models.Model):
     exp_loss = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     quantity = models.IntegerField(null=True)
     last_updated = models.DateTimeField(auto_now=True)
-    is_averaged = models.IntegerField(null=True)
+    averaging_count = models.IntegerField(null=True)

@@ -20,13 +20,9 @@ from fyersapi.models import TradingConfigurations
 from dhanhq import dhanhq
 from django.views.decorators.csrf import csrf_exempt
 
-
-
 # Create your views here.
 class HomePageView( TemplateView):
     template_name = "dashboard/authentication-login.html"
-
-
     def dispatch(self, request, *args, **kwargs):
         return super().dispatch(request, *args, **kwargs)
 
@@ -34,9 +30,6 @@ class HomePageView( TemplateView):
         context = super().get_context_data(**kwargs)
         context = {}
         return context
-
-
-
 
 class UserloginView(View):
     def get(self, request):
@@ -134,7 +127,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
         positions = position_data['data']
-        total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0
+        total_realized_profit = sum(position['realizedProfit'] for position in positions) if positions else 0.00
 
         # Sample static position data (this should ideally come from the API)
         position_data_json = json.dumps(position_data['data'])

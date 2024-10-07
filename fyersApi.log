@@ -1,0 +1,3 @@
+{"level":"ERROR","location":"[get_call:143] fyersModel","message":{"API":"/options-chain-v3","Error":{"message":"Please provide valid token","code":-15,"s":"error"}},"timestamp":"2024-10-06 12:23:15,135+0530","service":"FyersAPI"}
+{"level":"ERROR","location":"[get_call:143] fyersModel","message":{"API":"/options-chain-v3","Error":{"message":"Please provide valid token","code":-15,"s":"error"}},"timestamp":"2024-10-06 12:23:31,686+0530","service":"FyersAPI"}
+{"level":"ERROR","location":"[get_call:143] fyersModel","message":{"API":"/options-chain-v3","Error":{"message":"Please provide valid token","code":-15,"s":"error"}},"timestamp":"2024-10-06 12:23:37,116+0530","service":"FyersAPI"}
