@@ -197,8 +197,8 @@ def update_data_instance(request):
         dhan_access_token = settings.DHAN_ACCESS_TOKEN
         dhan = dhanhq(dhan_client_id, dhan_access_token)
 
-        orderlist = dhan.get_order_list()
-        dhan_fund = dhan.get_fund_limits()
+        order_data = dhan.get_order_list()
+        fund_data = dhan.get_fund_limits()
         positions_data = dhan.get_positions()
         if not  positions_data['data'] == []:
             realized_pl = sum(position.get('realizedProfit', 0) for position in positions_data['data'])
@@ -207,7 +207,7 @@ def update_data_instance(request):
 
 
         print("----------------------------", positions_data)
-        total_order_status = get_traded_order_count_dhan(orderlist)
+        total_order_status = get_traded_order_count_dhan(order_data)
 
         try:
             latest_active_position = OpenOrderTempData.objects.latest('last_updated')

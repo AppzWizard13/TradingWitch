@@ -288,3 +288,5 @@
 {"level":"ERROR","location":"[__symbol_conversion:1334] data_ws","message":{"code":-300,"message":"Please provide valid token","s":"error","type":"sub"},"timestamp":"2024-10-07 09:06:20,243+0530","service":"FyersDataSocket"}
 {"level":"ERROR","location":"[access_token_to_hsmtoken:272] data_ws","message":{"type":"cn","code":-99,"message":"Token is expired","s":"error"},"timestamp":"2024-10-07 09:06:21,642+0530","service":"FyersDataSocket"}
 {"level":"ERROR","location":"[__symbol_conversion:1334] data_ws","message":{"code":-300,"message":"Please provide valid token","s":"error","type":"sub"},"timestamp":"2024-10-07 09:06:24,465+0530","service":"FyersDataSocket"}
+{"level":"ERROR","location":"[<lambda>:1663] data_ws","message":"Connection to remote host was lost.","timestamp":"2024-10-07 09:19:15,353+0530","service":"FyersDataSocket"}
+{"level":"ERROR","location":"[<lambda>:1663] data_ws","message":"Connection to remote host was lost.","timestamp":"2024-10-07 09:19:21,703+0530","service":"FyersDataSocket"}

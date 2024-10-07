@@ -207,9 +207,9 @@
                                     <div class="row">
                                     <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
                                         <button id="portfolio_status" class="btn btn-primary spinner btn-lg btn-block w-100 h-100 fw-bold disabled" style="border-radius: 10px; background-color: blue;">
-                                            Portfolio Status<br>{{realized_pl|floatformat:2}}
+                                            Portfolio Status<br><span id="realized_pl_value">{{realized_pl|floatformat:2}}</span>
                                         </button>
-                                    </div>
+                                    </div>                                        
                                     <div class="col-6 d-flex justify-content-center align-items-center" style="height:65px;">
                                         <button id="account_balance" class="btn btn-primary spinner btn-lg btn-block w-100 h-100 fw-bold disabled" style="border-radius: 10px; background-color: blue;">
                                             Account Balance<br>{{total_account_balance|floatformat:2}}
@@ -490,9 +490,16 @@
                 type: 'GET',
                 success: function(response) {
                     console.log('Data received:', response);
+                    // Assuming 'response.realized_pl' is the new value you want to update in the HTML
+                    var realized_pl = response.realized_pl;
 
-                    // Uncomment below lines to handle total order status and progress bar updates
-                    
+                    // Update the Portfolio Status button with the new realized profit value
+                    var portfolioStatusButton = document.getElementById('portfolio_status');
+                    var realizedPlValue = document.getElementById('realized_pl_value');
+
+                    // Update the inner HTML of the button with the new value, formatted to 2 decimal places
+                    realizedPlValue.innerHTML = realized_pl.toFixed(2);
+
                     var totalOrderStatus = response.total_order_status;
                     var orderLimit = {{ order_limit }};
                     var remainingOrders = orderLimit - totalOrderStatus;
@@ -507,6 +514,7 @@
                     } else {
                         $('.progress-bar').addClass('bg-danger').removeClass('bg-success bg-warning');
                     }
+
                     
                 },
                 error: function(xhr, status, error) {
