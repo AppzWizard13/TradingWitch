@@ -118,6 +118,7 @@ def get_configuration(request, config_id):
         'averaging_quantity': config.averaging_quantity,
         'active_broker': config.active_broker,
         'is_active': config.is_active,
+        'external_url': config.external_url,
     }
     return JsonResponse(config_data)
 
