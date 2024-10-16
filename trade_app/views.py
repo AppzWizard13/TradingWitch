@@ -78,6 +78,7 @@ def create_configuration(request, config_id=None):
         config.averaging_quantity = request.POST.get('averaging_quantity')
         config.active_broker = request.POST.get('active_broker')
         config.is_active = request.POST.get('is_active') == 'on'
+        config.external_url = request.POST.get('external_url')
 
         config.save()  # Save the configuration (new or updated)
 

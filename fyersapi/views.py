@@ -719,3 +719,47 @@ def convert_derivative_symbol(der_symbol, ex_symbol1):
     return translated_symbol, formatted_expiry_date , formatted_custom_symbol
 
 
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+
+@csrf_exempt
+def postback_fetch(request):
+    if request.method == 'POST':
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+            # Log or process the data as needed (optional)
+            print("Received Data:", data)
+            # Forward the data to the external website
+            conf_data = TradingConfigurations.objects.filter(is_active=True).first()
+            external_url = conf_data.external_url + "/postback/fetch"
+            headers = {'Content-Type': 'application/json'}
+            response = requests.post(external_url, json=data, headers=headers)
+
+            # Check if the forwarding was successful
+            if response.status_code == 200:
+                return JsonResponse({'status': 'success', 'message': 'Data forwarded successfully'}, status=200)
+            else:
+                return JsonResponse({'status': 'error', 'message': 'Failed to forward data'}, status=500)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
+    else:
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=405)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

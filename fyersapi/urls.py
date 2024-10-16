@@ -12,6 +12,8 @@ urlpatterns = [
 
     path('instant-buy-order/', views.instantBuyOrderWithSL, name='instant_buy_order'),
 
+    path('postback/fetch/', views.postback_fetch, name='postback_fetch'),
+
 
 
 
