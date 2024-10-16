@@ -168,7 +168,7 @@
     </div>
 </div>    
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+<!-- <script>
     // Create a base domain string
     var domain = window.location.hostname;
 
@@ -189,7 +189,7 @@
         console.log("Message:", message);
         console.log("Symbols:", symbolList);
     }
-</script>
+</script> -->
 
 
 <script>
@@ -261,6 +261,7 @@
                 type: 'GET',
                 headers: { 'X-CSRFToken': csrftoken }, // Pass the CSRF token
                 success: function(data) {
+                    console.log('datadatadatadatadatadatadatadata', data)
                     // Populate the form with data for editing
                     $('#configuration_id').val(data.id);
                     $('#name').val(data.name);

@@ -48,6 +48,7 @@ class TradingConfigurations(models.Model):
         default=DHAN,
     )
     is_active = models.BooleanField(default=True)  # Is the configuration active
+    external_url = models.CharField(max_length=200)
 
     def __str__(self):
         return f"Trading Configurations - ID: {self.pk}"
