@@ -152,6 +152,17 @@ def get_traded_order_count_dhan(response):
     # Return the count of traded orders
     return len(traded_orders)
 
+def get_traded_order_filter_dhan(response):
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+
+    # Filter orders with 'orderStatus' as 'TRADED'
+    traded_orders = [order for order in response['data'] if order.get('orderStatus') == 'TRADED']
+
+    # Return the count of traded orders
+    return traded_orders
+
 
 def calculate_tax(cost):
     a = 0.000732
@@ -284,27 +295,27 @@ def close_all_positions(request):
 
     return JsonResponse({'message': 'Cannot Close Positions', 'code': '-99'})
 
-def position_closing_process(dhan):
-    open_positions = dhan.get_positions()
+# def position_closing_process(dhan):
+#     open_positions = dhan.get_positions()
     
-    if not open_positions['data']:
-        return False
+#     if not open_positions['data']:
+#         return False
     
-    # Use list comprehension to close all positions
-    close_responses = [
-        dhan.place_order(
-            security_id=position['securityId'],
-            exchange_segment=dhan.NSE_FNO,
-            transaction_type=dhan.SELL,
-            quantity=position['quantity'],
-            order_type=dhan.MARKET,
-            product_type=dhan.INTRA,
-            price=0
-        ) for position in open_positions['data']
-    ]
+#     # Use list comprehension to close all positions
+#     close_responses = [
+#         dhan.place_order(
+#             security_id=position['securityId'],
+#             exchange_segment=dhan.NSE_FNO,
+#             transaction_type=dhan.SELL,
+#             quantity=position['quantity'],
+#             order_type=dhan.MARKET,
+#             product_type=dhan.INTRA,
+#             price=0
+#         ) for position in open_positions['data']
+#     ]
     
-    # Return the first failure or the last successful response
-    return next((response for response in close_responses if response['status'] != 'success'), close_responses[-1])
+#     # Return the first failure or the last successful response
+#     return next((response for response in close_responses if response['status'] != 'success'), close_responses[-1])
 
 def get_pending_orders_dhan(response):
     print('responseresponseresponse:', response)
@@ -530,7 +541,7 @@ async def instantBuyOrderWithSL(request):
             order_type=dhan.SL,
             product_type=dhan.INTRA,
             price=stoploss_limit,
-            triggerPrice=stoploss_price,
+            trigger_price=stoploss_price,
             validity=dhan.DAY,
         )
 

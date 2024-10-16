@@ -124,6 +124,8 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         dhan = dhanhq(settings.DHAN_CLIENTID, settings.DHAN_ACCESS_TOKEN)
         fund_data = dhan.get_fund_limits()
         orderlistdata = dhan.get_order_list()
+        traded_orders = get_traded_order_filter_dhan(orderlistdata)
+
         position_data = dhan.get_positions()
         current_date = datetime.now().date()
         positions = position_data['data']
@@ -134,7 +136,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         # Add data to context
         context['fund_data'] = fund_data
-        context['orderlistdata'] = orderlistdata
+        context['orderlistdata'] = traded_orders
         context['position_data'] = position_data
         context['current_date'] = current_date
         context['position_data_json'] = position_data_json
@@ -176,6 +178,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
                 messages.error(request, 'Failed to get tokens from the API response.')
         else:
             messages.error(request, 'Auth code not found in session.')
+
+def get_traded_order_filter_dhan(response):
+    # Check if the response contains 'data'
+    if 'data' not in response:
+        return 0
+
+    # Filter orders with 'orderStatus' as 'TRADED'
+    traded_orders = [order for order in response['data'] if order.get('orderStatus') == 'TRADED']
+
+    # Return the count of traded orders
+    return traded_orders
 
 class LogoutView(View):
     def get(self, request):
