@@ -734,9 +734,13 @@ def postback_fetch(request):
             print("Received Data:", data)
             # Forward the data to the external website
             conf_data = TradingConfigurations.objects.filter(is_active=True).first()
-            external_url = conf_data.external_url + "/postback/fetch"
+            external_url = conf_data.external_url + "/postback/local/fetch"
             headers = {'Content-Type': 'application/json'}
             response = requests.post(external_url, json=data, headers=headers)
+
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            print('responseresponseresponseresponseresponse', response)
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
             # Check if the forwarding was successful
             if response.status_code == 200:
